@@ -1,9 +1,12 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
 import express from 'express';
 import mongoose from 'mongoose';
 
 import authRoutes from './src/routes/authRoutes.js';
 import expenseRoutes from './src/routes/expenseRoutes.js';
+
+dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
 
 const app = express();
 
