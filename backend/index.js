@@ -6,6 +6,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 
 import authRoutes from './src/routes/authRoutes.js';
 import expenseRoutes from './src/routes/expenseRoutes.js';
+import { apiLimiter } from './src/middlewares/rateLimitMiddleware.js';
 
 dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
 
@@ -20,6 +21,6 @@ mongoose.connect(process.env.DATABASE_URL)
   .catch(err => console.error("Erro ao conectar ao MongoDB:", err));
 
 app.use('/auth', authRoutes);
-app.use('/expenses', expenseRoutes);
+app.use('/expenses', apiLimiter, expenseRoutes);
 
 app.listen(3000, () => console.log("CategorIA Backend rodando na porta 3000"));
