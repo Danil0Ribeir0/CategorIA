@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { email } from "zod";
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -9,14 +8,17 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true,
+        lowercase: true,
+        match: [/^\S+@\S+\.\S+$/, 'Por favor, insira um endereço de e-mail válido']
     },
     password: { 
         type: String, 
         required: true 
     }
 }, 
-    { 
+{ 
     timestamps: true 
 });
 
