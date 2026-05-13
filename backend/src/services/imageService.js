@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { model } from './aiService.js';
 import { expenseZodSchema } from '../schemas/expenseSchema.js';
+import { anonymizeText } from '../utils/anonymizer.js';
 
 function fileToGenerativePart(filePath, mimeType) {
   return {
@@ -31,6 +32,15 @@ export async function processExpenseFromImage(imagePath, mimeType = "image/jpeg"
     const result = await model.generateContent([promptRico, imagePart]);
     const jsonString = result.response.text();
     const rawData = JSON.parse(jsonString);
+
+    if (rawData.description) {
+        const safeDescription = anonymizeText(rawData.description);
+        
+        if (safeDescription !== rawData.description) {
+            console.warn(`[AUDITORIA DE PRIVACIDADE]: A IA (Gemini) tentou incluir dados sensíveis na descrição da despesa. O filtro de anonimização interveio.`);
+            rawData.description = safeDescription;
+        }
+    }
 
     const validation = expenseZodSchema.safeParse(rawData);
 
