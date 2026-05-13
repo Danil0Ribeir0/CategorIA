@@ -26,7 +26,7 @@ export const authController = {
                 userId: user._id
             })
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -56,7 +56,7 @@ export const authController = {
                 name: user.name
             });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 }

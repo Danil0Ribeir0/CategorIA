@@ -63,7 +63,7 @@ export const expenseController = {
                 breakdown: formattedSummary
             });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -111,7 +111,7 @@ export const expenseController = {
                 }
             });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -129,7 +129,7 @@ export const expenseController = {
 
             return res.status(201).json(expense);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -151,7 +151,7 @@ export const expenseController = {
             return res.status(201).json(expense);
         } catch (error) {
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -173,7 +173,7 @@ export const expenseController = {
             return res.status(201).json(expense);
         } catch (error) {
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -208,7 +208,7 @@ export const expenseController = {
 
             return res.status(200).json(expense);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -224,7 +224,7 @@ export const expenseController = {
 
             return res.status(200).json({ message: 'Despesa apagada com sucesso!' });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     },
 
@@ -248,7 +248,7 @@ export const expenseController = {
 
             return res.status(200).send(csv);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 };
