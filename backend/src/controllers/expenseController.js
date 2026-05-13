@@ -3,6 +3,7 @@ import { processExpenseFromImage } from '../services/imageService.js';
 import { processExpenseFromAudio } from '../services/audioService.js';
 import { convertToBrl } from '../services/currencyService.js';
 import { Expense } from '../models/Expense.js';
+import { sanitizeCSVValue } from '../utils/csvHelper.js';
 
 import mongoose from 'mongoose';
 import fs from 'fs';
@@ -228,7 +229,7 @@ export const expenseController = {
         }
     },
 
-    async exportCsv(req, res) {
+    async exportCsv(req, res, next) {
         try {
             const expenses = await Expense.find({ user: req.userId }).sort({ date: -1 });
 
@@ -240,7 +241,10 @@ export const expenseController = {
 
             expenses.forEach(exp => {
                 const date = exp.date.toISOString().split('T')[0];
-                csv += `${date},"${exp.description}",${exp.category},${exp.amount},${exp.currency},${exp.amountInBrl}\n`;
+                const safeDescription = sanitizeCSVValue(exp.description);
+                const safeCategory = sanitizeCSVValue(exp.category);
+
+                csv += `${date},"${safeDescription}",${safeCategory},${exp.amount},${exp.currency},${exp.amountInBrl}\n`;
             });
 
             res.setHeader('Content-Type', 'text/csv');
