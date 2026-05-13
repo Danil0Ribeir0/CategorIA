@@ -3,15 +3,25 @@ import { processExpenseFromImage } from '../services/imageService.js';
 import { processExpenseFromAudio } from '../services/audioService.js';
 import { convertToBrl } from '../services/currencyService.js';
 import { Expense } from '../models/Expense.js';
+
 import mongoose from 'mongoose';
 import fs from 'fs';
+import { z } from 'zod';
+
+const listQuerySchema = z.object({
+    category: z.string().optional(),
+    month: z.coerce.number().min(1, "Mês deve ser de 1 a 12").max(12, "Mês deve ser de 1 a 12").optional(),
+    year: z.coerce.number().min(2000, "Ano inválido").optional(),
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(50, "Máximo de 50 itens por página").default(10)
+});
 
 export const expenseController = {
     async summary(req, res) {
         try {
             const { month, year } = req.query;
 
-            const machStage = {
+            const matchStage = {
                 user: new mongoose.Types.ObjectId(req.userId)
             };
 
@@ -51,7 +61,16 @@ export const expenseController = {
 
     async list(req, res) {
         try {
-            const { category, month, year, page = 1, limit = 10 } = req.query;
+            const validation = listQuerySchema.safeParse(req.query);
+
+            if (!validation.success) {
+                return res.status(400).json({ 
+                    error: "Parâmetros inválidos", 
+                    details: validation.error.flatten().fieldErrors 
+                });
+            }
+
+            const { category, month, year, page, limit } = validation.data;
 
             const query = { user: req.userId };
 
@@ -65,12 +84,12 @@ export const expenseController = {
                 query.date = { $gte: startDate, $lte: endDate };
             }
 
-            const skip = (Number(page) - 1) * Number(limit);
+            const skip = (page - 1) * limit;
 
             const expenses = await Expense.find(query)
                 .sort({ date: -1 })
                 .skip(skip)
-                .limit(Number(limit));
+                .limit(limit);
 
             const totalItems = await Expense.countDocuments(query);
 
@@ -78,9 +97,9 @@ export const expenseController = {
                 data: expenses,
                 pagination: {
                     totalItems,
-                    currentPage: Number(page),
-                    totalPages: Math.ceil(totalItems / Number(limit)),
-                    itemsPerPage: Number(limit)
+                    currentPage: page,
+                    totalPages: Math.ceil(totalItems / limit),
+                    itemsPerPage: limit
                 }
             });
         } catch (error) {
