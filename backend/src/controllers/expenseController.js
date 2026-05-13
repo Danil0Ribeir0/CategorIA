@@ -16,6 +16,14 @@ const listQuerySchema = z.object({
     limit: z.coerce.number().min(1).max(50, "Máximo de 50 itens por página").default(10)
 });
 
+const updateExpenseSchema = z.object({
+    description: z.string().min(1, "A descrição não pode ser vazia").optional(),
+    category: z.string().optional(),
+    amount: z.number().positive("O valor deve ser positivo").optional(),
+    currency: z.string().length(3, "A moeda deve ter 3 caracteres (ex: BRL, USD)").optional(),
+    date: z.string().datetime().or(z.date()).optional()
+}).strict();
+
 export const expenseController = {
     async summary(req, res) {
         try {
@@ -172,17 +180,31 @@ export const expenseController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const updateData = req.body;
+            const validation = updateExpenseSchema.safeParse(req.body);
 
-            const expense = await Expense.findOneAndUpdate(
-                { _id: id, user: req.userId }, 
-                updateData,
-                { returnDocument: 'after', runValidators: true }
-            );
+            if (!validation.success) {
+                return res.status(400).json({ 
+                    error: "Dados de atualização inválidos", 
+                    details: validation.error.flatten().fieldErrors 
+                });
+            }
+
+            const updateData = validation.data;
+            const expense = await Expense.findOne({ _id: id, user: req.userId });
 
             if (!expense) {
                 return res.status(404).json({ error: 'Despesa não encontrada ou não tem permissão para a editar.' });
             }
+
+            const needsRecalculation = updateData.amount !== undefined || updateData.currency !== undefined;
+
+            Object.assign(expense, updateData);
+
+            if (needsRecalculation) {
+                expense.amountInBrl = await convertToBrl(expense.amount, expense.currency);
+            }
+
+            await expense.save();
 
             return res.status(200).json(expense);
         } catch (error) {
