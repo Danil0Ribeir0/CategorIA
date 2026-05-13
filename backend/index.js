@@ -3,6 +3,7 @@ import path from 'path';
 import express from 'express';
 import mongoose from 'mongoose';
 import mongoSanitize from 'express-mongo-sanitize';
+import cors from 'cors';
 
 import authRoutes from './src/routes/authRoutes.js';
 import expenseRoutes from './src/routes/expenseRoutes.js';
@@ -14,8 +15,13 @@ dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
 
 const app = express();
 
-app.use(express.json());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 
+app.use(express.json());
 app.use(mongoSanitize());
 
 mongoose.connect(process.env.DATABASE_URL)
