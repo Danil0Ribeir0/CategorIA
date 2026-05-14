@@ -1,13 +1,7 @@
 import { z } from 'zod';
-import { ExpenseService } from '../services/expenseService.js';
-import { ExpenseRepository } from '../repositories/expenseRepository.js';
+import { container } from '../config/container.js';
 
-import { Expense } from '../models/Expense.js';
-import { convertToBrl } from '../services/currencyService.js';
-import { processUserExpense } from '../services/aiService.js';
-import { processExpenseFromImage } from '../services/imageService.js';
-import { processExpenseFromAudio } from '../services/audioService.js';
-import { sanitizeCSVValue } from '../utils/csvHelper.js';
+const expenseService = container.get('expenseService');
 
 const listQuerySchema = z.object({
     category: z.string().optional(),
@@ -37,8 +31,7 @@ const expenseService = new ExpenseService(
 export const expenseController = {
     async summary(req, res, next) {
         try {
-            const { month, year } = req.query;
-            const result = await expenseService.generateSummary(month, year, req.userId);
+            const result = await expenseService.generateSummary(req.query.month, req.query.year, req.userId);
             return res.status(200).json(result);
         } catch (error) { next(error); }
     },
