@@ -2,9 +2,9 @@ import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { expenseZodSchema, ALLOWED_CATEGORIES } from '../schemas/expenseSchema.js';import 'dotenv/config';
 import { anonymizeText } from '../utils/anonymizer.js';
 import { AIProcessor } from './aiProcessor.js';
-import 'dotenv/config';
+import { config } from '../config/env.js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(config.ai.geminiApiKey);
 
 const SYSTEM_INSTRUCTION = `
 Você é um assistente financeiro especialista em extração de dados.
@@ -46,11 +46,11 @@ const expenseSchema = {
 };
 
 export const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
-  systemInstruction: SYSTEM_INSTRUCTION,
+  model: config.ai.model,
+  systemInstruction: SYSTEM_INSTRUCTION, 
   generationConfig: {
     responseMimeType: "application/json",
-    responseSchema: expenseSchema,
+    responseSchema: expenseSchema,      
     temperature: 0.1,
   }
 });

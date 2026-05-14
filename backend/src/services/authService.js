@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { config } from '../config/env.js';
 
 export class AuthService {
     constructor(userRepository) {
@@ -41,7 +42,11 @@ export class AuthService {
             throw error;
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d'});
+        const token = jwt.sign(
+            { userId: user._id }, 
+            config.jwt.secret, 
+            { expiresIn: config.jwt.expiresIn }
+        );
 
         return { message: 'Login efetuado com sucesso!', token, name: user.name };
     }

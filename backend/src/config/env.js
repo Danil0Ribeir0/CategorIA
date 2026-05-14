@@ -15,8 +15,24 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-    console.error("Erro de configuração de ambiente:", _env.error.format());
+    console.error('Erro fatal: Variáveis de ambiente inválidas ou em falta!');
+    console.error(_env.error.format());
     process.exit(1);
 }
 
-export const env = _env.data;
+export const config = {
+    server: {
+        port: parseInt(_env.data.PORT, 10),
+    },
+    database: {
+        url: _env.data.MONGO_URI,
+    },
+    jwt: {
+        secret: _env.data.JWT_SECRET,
+        expiresIn: '7d'
+    },
+    ai: {
+        geminiApiKey: _env.data.GEMINI_API_KEY,
+        model: 'gemini-2.5-flash'
+    }
+};
