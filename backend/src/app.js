@@ -3,16 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
-import { env } from './config/env.js';
-import authRoutes from './src/routes/authRoutes.js';
-import expenseRoutes from './src/routes/expenseRoutes.js';
-import { apiLimiter } from './src/middlewares/rateLimitMiddleware.js';
-import { errorHandler } from './src/middlewares/errorMiddleware.js';
+import { config } from './config/env.js';
+import authRoutes from './routes/authRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import { apiLimiter } from './middlewares/rateLimitMiddleware.js';
+import { errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: config.frontend?.url || 'http://localhost:5173', credentials: true }));
 
 app.use(compression());
 

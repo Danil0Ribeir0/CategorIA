@@ -25,7 +25,10 @@ export const config = {
         port: parseInt(_env.data.PORT, 10),
     },
     database: {
-        url: _env.data.MONGO_URI,
+        url: _env.data.DATABASE_URL,
+    },
+    frontend: {
+        url: _env.data.FRONTEND_URL
     },
     jwt: {
         secret: _env.data.JWT_SECRET,

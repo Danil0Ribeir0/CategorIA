@@ -19,15 +19,6 @@ const updateExpenseSchema = z.object({
     date: z.string().datetime().or(z.date()).optional()
 }).strict();
 
-const expenseRepository = new ExpenseRepository(Expense);
-
-const expenseService = new ExpenseService(
-    Expense,
-    { convertToBrl },
-    { processUserExpense, processExpenseFromImage, processExpenseFromAudio },
-    { sanitizeCSVValue }
-);
-
 export const expenseController = {
     async summary(req, res, next) {
         try {

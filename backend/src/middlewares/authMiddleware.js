@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { config } from '../config/env.js';
 
 export const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -19,7 +20,7 @@ export const authMiddleware = (req, res, next) => {
         return res.status(401).json({ error: 'Token malformatado.' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, config.jwt.secret, (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Token inválido ou expirado.' });
         }
