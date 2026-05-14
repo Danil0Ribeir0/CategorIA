@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
 export class ExpenseService {
-    constructor(expenseRepository, currencyService, aiServices, exportFactory) {
+    constructor(expenseRepository, currencyService, aiServices, exportFactory, expenseStrategyFactory) {
         this.expenseRepository = expenseRepository;
         this.currencyService = currencyService;
         this.aiServices = aiServices;
         this.exportFactory = exportFactory;
+        this.expenseStrategyFactory = expenseStrategyFactory;
     }
 
     async generateSummary(month, year, userId) {
@@ -57,18 +58,11 @@ export class ExpenseService {
         return this.expenseRepository.create({ ...rawData, amountInBrl, user: userId });
     }
 
-    async createFromText(text, userId) {
-        const rawData = await this.aiServices.processUserExpense(text);
-        return this._createExpenseCore(rawData, userId);
-    }
-
-    async createFromImage(filePath, mimeType, userId) {
-        const rawData = await this.aiServices.processExpenseFromImage(filePath, mimeType);
-        return this._createExpenseCore(rawData, userId);
-    }
-
-    async createFromAudio(filePath, mimeType, userId) {
-        const rawData = await this.aiServices.processExpenseFromAudio(filePath, mimeType);
+    async createExpense(type, inputData, userId) {
+        const strategy = this.expenseStrategyFactory.getStrategy(type);
+        
+        const rawData = await strategy.extract(inputData);
+        
         return this._createExpenseCore(rawData, userId);
     }
 

@@ -47,25 +47,29 @@ export const expenseController = {
         } catch (error) { next(error); }
     },
 
-    async createFromText(req, res, next) {
+    async create(req, res, next) {
         try {
-            const result = await expenseService.createFromText(req.body.text, req.userId);
-            return res.status(201).json(result);
-        } catch (error) { next(error); }
-    },
+            const type = req.body.type;
+            
+            if (!type) {
+                return res.status(400).json({ error: "O campo 'type' é obrigatório." });
+            }
 
-    async createFromImage(req, res, next) {
-        try {
-            const result = await expenseService.createFromImage(req.file.path, req.file.mimetype, req.userId);
-            return res.status(201).json(result);
-        } catch (error) { next(error); }
-    },
+            const inputData = type === 'text' ? req.body.text : req.file;
 
-    async createFromAudio(req, res, next) {
-        try {
-            const result = await expenseService.createFromAudio(req.file.path, req.file.mimetype, req.userId);
+            if (!inputData) {
+                return res.status(400).json({ error: "Dados de entrada (texto ou ficheiro) não fornecidos." });
+            }
+
+            const result = await expenseService.createExpense(type, inputData, req.userId);
+            
             return res.status(201).json(result);
-        } catch (error) { next(error); }
+        } catch (error) {
+            if (error.message.includes('não é suportado')) {
+                return res.status(400).json({ error: error.message });
+            }
+            next(error);
+        }
     },
 
     async update(req, res, next) {
