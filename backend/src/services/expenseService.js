@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 export class ExpenseService {
-    constructor(ExpenseModel, currencyService, aiServices, csvHelper) {
-        this.Expense = ExpenseModel;
+    constructor(expenseRepository, currencyService, aiServices, csvHelper) {
+        this.expenseRepository = expenseRepository;
         this.currencyService = currencyService;
         this.aiServices = aiServices;
         this.csvHelper = csvHelper;
@@ -17,7 +17,7 @@ export class ExpenseService {
             matchStage.date = { $gte: startDate, $lte: endDate };
         }
 
-        const summary = await this.Expense.aggregate([
+        const summary = await this.expenseRepository.aggregate([
             { $match: matchStage },
             { $group: { _id: "$category", totalAmount: { $sum: "$amountInBrl" } } },
             { $sort: { totalAmount: -1 } }
@@ -49,27 +49,12 @@ export class ExpenseService {
 
         const skip = (page - 1) * limit;
 
-        const expenses = await this.Expense.find(query)
-            .sort({ date: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        const totalItems = await this.Expense.countDocuments(query);
-
-        return {
-            data: expenses,
-            pagination: {
-                totalItems,
-                currentPage: page,
-                totalPages: Math.ceil(totalItems / limit),
-                itemsPerPage: limit
-            }
-        };
+        return this.expenseRepository.findWithPagination(query, skip, limit);
     }
 
     async _createExpenseCore(rawData, userId) {
         const amountInBrl = await this.currencyService.convertToBrl(rawData.amount, rawData.currency);
-        return this.Expense.create({ ...rawData, amountInBrl, user: userId });
+        return this.expenseRepository.create({ ...rawData, amountInBrl, user: userId });
     }
 
     async createFromText(text, userId) {
@@ -88,28 +73,29 @@ export class ExpenseService {
     }
 
     async updateExpense(id, updateData, userId) {
-        const expense = await this.Expense.findOne({ _id: id, user: userId });
-        if (!expense) throw new Error('NOT_FOUND');
+        const existingExpense = await this.expenseRepository.findByIdAndUser(id, userId);
+        if (!existingExpense) throw new Error('NOT_FOUND');
 
         const needsRecalculation = updateData.amount !== undefined || updateData.currency !== undefined;
-        Object.assign(expense, updateData);
+        const finalUpdateData = { ...updateData };
 
         if (needsRecalculation) {
-            expense.amountInBrl = await this.currencyService.convertToBrl(expense.amount, expense.currency);
+            const amountToConvert = updateData.amount !== undefined ? updateData.amount : existingExpense.amount;
+            const currencyToConvert = updateData.currency !== undefined ? updateData.currency : existingExpense.currency;
+            finalUpdateData.amountInBrl = await this.currencyService.convertToBrl(amountToConvert, currencyToConvert);
         }
 
-        await expense.save();
-        return expense;
+        return this.expenseRepository.update(id, userId, finalUpdateData);
     }
 
     async removeExpense(id, userId) {
-        const expense = await this.Expense.findOneAndDelete({ _id: id, user: userId });
+        const expense = await this.expenseRepository.delete(id, userId);
         if (!expense) throw new Error('NOT_FOUND');
         return true;
     }
 
     async exportCsv(userId) {
-        const expenses = await this.Expense.find({ user: userId }).sort({ date: -1 });
+        const expenses = await this.expenseRepository.findAll({ user: userId });
         if (expenses.length === 0) throw new Error('NOT_FOUND');
 
         let csv = 'Data,Descricao,Categoria,Valor Original,Moeda,Valor em BRL\n';

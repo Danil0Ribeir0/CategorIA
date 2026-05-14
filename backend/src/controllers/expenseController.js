@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ExpenseService } from '../services/expenseService.js';
+import { ExpenseRepository } from '../repositories/expenseRepository.js';
 
 import { Expense } from '../models/Expense.js';
 import { convertToBrl } from '../services/currencyService.js';
@@ -23,6 +24,8 @@ const updateExpenseSchema = z.object({
     currency: z.string().length(3).optional(),
     date: z.string().datetime().or(z.date()).optional()
 }).strict();
+
+const expenseRepository = new ExpenseRepository(Expense);
 
 const expenseService = new ExpenseService(
     Expense,

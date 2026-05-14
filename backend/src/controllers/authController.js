@@ -1,62 +1,36 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { AuthService } from '../services/authService.js';
+import { UserRepository } from '../repositories/userRepository.js';
 import { User } from '../models/User.js';
 
+const userRepository = new UserRepository(User);
+const authService = new AuthService(userRepository);
+
 export const authController = {
-    async register (req, res) {
+    async register(req, res, next) {
         try {
             const { name, email, password } = req.body;
-
-            const userExists = await User.findOne({ email });
-            if (userExists) {
-                return res.status(400).json({ error: 'Este email já está registado.' });
-            }
-
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-
-            const user = await User.create({
-                name,
-                email,
-                password: hashedPassword
-            });
-
-            return res.status(201).json({
-                message: 'Conta criada com sucesso!',
-                userId: user._id
-            })
+            const result = await authService.register(name, email, password);
+            
+            return res.status(201).json(result);
         } catch (error) {
+            if (error.statusCode) {
+                return res.status(error.statusCode).json({ error: error.message });
+            }
             next(error);
         }
     },
 
-    async login (req, res) {
+    async login(req, res, next) {
         try {
             const { email, password } = req.body;
-
-            const user = await User.findOne({ email });
-            if (!user) {
-                return res.status(401).json({ error: 'Credenciais inválidas.' });
-            }
-
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return res.status(401).json({ error: 'Credenciais inválidas.' })
-            }
-
-            const token = jwt.sign(
-                { userId: user._id },
-                process.env.JWT_SECRET,
-                { expiresIn: '7d'}
-            );
-
-            return res.json({
-                message: 'Login efetuado com sucesso!',
-                token,
-                name: user.name
-            });
+            const result = await authService.login(email, password);
+            
+            return res.json(result);
         } catch (error) {
+            if (error.statusCode) {
+                return res.status(error.statusCode).json({ error: error.message });
+            }
             next(error);
         }
     }
-}
+};
