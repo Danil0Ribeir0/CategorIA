@@ -1,32 +1,40 @@
 export async function convertToBrl(amount, currency) {
-  if (currency === 'BRL') {
-    return amount;
-  }
-
-  try {
-    const response = await fetch(`https://economia.awesomeapi.com.br/json/last/${currency}-BRL`);
-    
-    if (!response.ok) {
-      throw new Error(`Falha ao buscar cotação da API. Status: ${response.status}`);
+    if (!currency || currency.toUpperCase() === 'BRL') {
+      return amount;
     }
 
-    const data = await response.json();
-    const key = `${currency}BRL`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    if (!data[key]) {
-      throw new Error(`Cotação para a moeda ${currency} não encontrada.`);
+    try {
+        const response = await fetch(`https://economia.awesomeapi.com.br/json/last/${currency}-BRL`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error("Falha ao comunicar com a API de câmbio.");
+        }
+
+        const data = await response.json();
+        const key = `${currency}BRL`;
+        
+        if (!data[key]) {
+          throw new Error("Moeda não suportada ou cotação indisponível.");
+        }
+
+        const bid = parseFloat(data[key].bid);
+        return amount * bid;
+
+    } catch (error) {
+        clearTimeout(timeoutId);
+
+        if (error.name === 'AbortError') {
+            console.error(`[TIMEOUT] A API de câmbio não respondeu dentro de 5 segundos.`);
+            throw new Error("O serviço de conversão de moedas está temporariamente indisponível. Tente novamente mais tarde.");
+        }
+
+        throw error;
     }
-
-    const rate = parseFloat(data[key].ask);
-    
-    const convertedAmount = parseFloat((amount * rate).toFixed(2));
-
-    console.log(`Conversão: ${amount} ${currency} * R$ ${rate.toFixed(2)} = R$ ${convertedAmount}`);
-    
-    return convertedAmount;
-
-  } catch (error) {
-    console.error("Erro no serviço de conversão:", error.message);
-    throw error;
-  }
 }

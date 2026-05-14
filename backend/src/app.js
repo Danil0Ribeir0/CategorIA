@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
+import compression from 'compression';
 import { env } from './config/env.js';
 import authRoutes from './src/routes/authRoutes.js';
 import expenseRoutes from './src/routes/expenseRoutes.js';
@@ -12,6 +13,9 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+
+app.use(compression());
+
 app.use(express.json());
 app.use(mongoSanitize());
 
