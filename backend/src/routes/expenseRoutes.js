@@ -32,13 +32,11 @@ router.use(authMiddleware);
 
 router.get('/', expenseController.list);
 router.get('/summary', expenseController.summary);
-router.get('/export', expenseController.exportCsv);
+
+router.get('/export', expenseController.export);
 
 router.put('/:id', expenseController.update);
 router.delete('/:id', expenseController.remove);
-
-router.post('/text', expenseController.createFromText);
-router.post('/image', upload.single('image'), fileCleanup, expenseController.createFromImage);
-router.post('/audio', upload.single('audio'), fileCleanup, expenseController.createFromAudio);
+router.post('/', upload.single('file'), fileCleanup, expenseController.create);
 
 export default router;
