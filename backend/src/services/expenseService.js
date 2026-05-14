@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 export class ExpenseService {
-    constructor(expenseRepository, currencyService, aiServices, csvHelper) {
+    constructor(expenseRepository, currencyService, aiServices, exportFactory) {
         this.expenseRepository = expenseRepository;
         this.currencyService = currencyService;
         this.aiServices = aiServices;
-        this.csvHelper = csvHelper;
+        this.exportFactory = exportFactory;
     }
 
     async generateSummary(month, year, userId) {
@@ -94,17 +94,17 @@ export class ExpenseService {
         return true;
     }
 
-    async exportCsv(userId) {
+    async exportExpenses(userId, format = 'csv') {
         const expenses = await this.expenseRepository.findAll({ user: userId });
         if (expenses.length === 0) throw new Error('NOT_FOUND');
 
-        let csv = 'Data,Descricao,Categoria,Valor Original,Moeda,Valor em BRL\n';
-        expenses.forEach(exp => {
-            const date = exp.date.toISOString().split('T')[0];
-            const safeDescription = this.csvHelper.sanitizeCSVValue(exp.description);
-            const safeCategory = this.csvHelper.sanitizeCSVValue(exp.category);
-            csv += `${date},"${safeDescription}",${safeCategory},${exp.amount},${exp.currency},${exp.amountInBrl}\n`;
-        });
-        return csv;
+        const exporter = this.exportFactory.create(format);
+        const data = exporter.export(expenses);
+
+        return {
+            data,
+            contentType: exporter.getContentType(),
+            extension: exporter.getFileExtension()
+        };
     }
 }

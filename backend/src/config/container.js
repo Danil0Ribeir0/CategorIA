@@ -12,6 +12,7 @@ import { sanitizeCSVValue } from '../utils/csvHelper.js';
 
 import { AuthService } from '../services/authService.js';
 import { ExpenseService } from '../services/expenseService.js';
+import { ExportFactory } from '../services/exportService.js';
 
 class DIContainer {
     constructor() {
@@ -42,6 +43,7 @@ const csvHelper = { sanitizeCSVValue };
 container.register('currencyService', currencyService);
 container.register('aiServices', aiServices);
 container.register('csvHelper', csvHelper);
+container.register('exportFactory', new ExportFactory(container.get('csvHelper')));
 
 container.register('authService', new AuthService(
     container.get('userRepository')
@@ -51,5 +53,5 @@ container.register('expenseService', new ExpenseService(
     container.get('expenseRepository'),
     container.get('currencyService'),
     container.get('aiServices'),
-    container.get('csvHelper')
+    container.get('exportFactory')
 ));

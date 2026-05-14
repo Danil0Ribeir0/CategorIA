@@ -92,14 +92,19 @@ export const expenseController = {
         }
     },
 
-    async exportCsv(req, res, next) {
+    async export(req, res, next) {
         try {
-            const csv = await expenseService.exportCsv(req.userId);
-            res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', 'attachment; filename=extrato_categoria.csv');
-            return res.status(200).send(csv);
+            const format = req.query.format || 'csv';
+            const result = await expenseService.exportExpenses(req.userId, format);
+
+            res.setHeader('Content-Type', result.contentType);
+            res.setHeader('Content-Disposition', `attachment; filename=extrato_categoria.${result.extension}`);
+
+            return res.status(200).send(result.data);
         } catch (error) {
-            if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Nenhuma despesa encontrada.' });
+            if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'Nenhuma despesa encontrada para exportar.' });
+            if (error.message.includes('não suportado')) return res.status(400).json({ error: error.message });
+            
             next(error);
         }
     }
