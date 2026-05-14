@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { expenseController } from '../controllers/expenseController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
+import { fileCleanup } from '../middlewares/fileCleanupMiddleware.js';
 
 const router = express.Router();
 const upload = multer({ 
@@ -37,7 +38,7 @@ router.put('/:id', expenseController.update);
 router.delete('/:id', expenseController.remove);
 
 router.post('/text', expenseController.createFromText);
-router.post('/image', upload.single('image'), expenseController.createFromImage);
-router.post('/audio', upload.single('audio'), expenseController.createFromAudio);
+router.post('/image', upload.single('image'), fileCleanup, expenseController.createFromImage);
+router.post('/audio', upload.single('audio'), fileCleanup, expenseController.createFromAudio);
 
 export default router;

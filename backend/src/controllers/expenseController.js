@@ -134,11 +134,9 @@ export const expenseController = {
         }
     },
 
-    async createFromImage(req, res) {
-        const filePath = req.file.path;
-    
+    async createFromImage(req, res, next) {
         try {
-            const rawData = await processExpenseFromImage(filePath, req.file.mimetype);
+            const rawData = await processExpenseFromImage(req.file.path, req.file.mimetype);
             const amountInBrl = await convertToBrl(rawData.amount, rawData.currency);
             
             const expense = await Expense.create({ 
@@ -147,20 +145,15 @@ export const expenseController = {
                 user: req.userId 
             });
 
-            fs.unlinkSync(filePath); 
-
             return res.status(201).json(expense);
         } catch (error) {
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            next(error);
+            next(error); 
         }
     },
 
-    async createFromAudio(req, res) {
-        const filePath = req.file.path;
-    
+    async createFromAudio(req, res, next) {
         try {
-            const rawData = await processExpenseFromAudio(filePath, req.file.mimetype);
+            const rawData = await processExpenseFromAudio(req.file.path, req.file.mimetype);
             const amountInBrl = await convertToBrl(rawData.amount, rawData.currency);
             
             const expense = await Expense.create({ 
@@ -169,11 +162,8 @@ export const expenseController = {
                 user: req.userId 
             });
 
-            fs.unlinkSync(filePath); 
-
             return res.status(201).json(expense);
         } catch (error) {
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
             next(error);
         }
     },
