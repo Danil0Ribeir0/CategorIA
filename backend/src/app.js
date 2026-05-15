@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import mongoSanitize from 'express-mongo-sanitize';
+import { safeSanitize } from './middlewares/sanitizeMiddleware.js';
 import compression from 'compression';
 import { config } from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
@@ -17,7 +17,7 @@ app.use(cors({ origin: config.frontend?.url || 'http://localhost:5173', credenti
 app.use(compression());
 
 app.use(express.json());
-app.use(mongoSanitize());
+app.use(safeSanitize);
 
 app.use('/auth', authRoutes);
 app.use('/expenses', apiLimiter, expenseRoutes);
