@@ -1,6 +1,10 @@
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Plus } from 'lucide-react';
+
 import ExpenseCard from '../components/Cards/ExpenseCard';
+import Modal from '../components/UI/Modal';
+import ExpenseForm from '../components/Forms/ExpenseForm';
 
 const PageHeader = styled.div`
   display: flex;
@@ -25,10 +29,11 @@ const AddButton = styled.button`
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 
   &:hover {
     background-color: var(--primary-hover);
+    transform: translateY(-1px);
   }
 `;
 
@@ -38,34 +43,63 @@ const CardsGrid = styled.div`
   gap: 1.5rem;
 `;
 
-const mockExpenses = [
-  { id: 1, description: 'Almoço Restaurante', category: 'Alimentação', date: '2024-05-15', amount: 45.90 },
-  { id: 2, description: 'Uber para o trabalho', category: 'Transporte', date: '2024-05-14', amount: 22.50 },
-  { id: 3, description: 'Supermercado', category: 'Compras', date: '2024-05-13', amount: 350.00 },
-];
-
 export default function Expenses() {
+  const [expenses, setExpenses] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setExpenses([
+        { id: 1, description: 'Almoço', category: 'Alimentação', date: '2024-05-15', amount: 45.90 },
+        { id: 2, description: 'Uber', category: 'Transporte', date: '2024-05-14', amount: 22.50 }
+      ]);
+      setLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleAddExpense = (newExpenseData) => {
+    const newExpense = {
+      id: Date.now(),
+      ...newExpenseData
+    };
+
+    setExpenses(prev => [newExpense, ...prev]);
+    setIsModalOpen(false);
+    
+    console.log("Nova despesa adicionada:", newExpense);
+  };
+
   return (
     <div>
       <PageHeader>
         <h1>Minhas Despesas</h1>
-        <AddButton>
+        <AddButton onClick={() => setIsModalOpen(true)}>
           <Plus size={20} />
           Nova Despesa
         </AddButton>
       </PageHeader>
 
       <CardsGrid>
-        {mockExpenses.map(expense => (
-          <ExpenseCard 
-            key={expense.id}
-            description={expense.description}
-            category={expense.category}
-            date={expense.date}
-            amount={expense.amount}
-          />
-        ))}
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)' }}>Carregando...</p>
+        ) : expenses.length > 0 ? (
+          expenses.map(expense => (
+            <ExpenseCard key={expense.id} {...expense} />
+          ))
+        ) : (
+          <p style={{ color: 'var(--text-muted)' }}>Nenhuma despesa encontrada.</p>
+        )}
       </CardsGrid>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Adicionar Despesa"
+      >
+        <ExpenseForm onSubmit={handleAddExpense} />
+      </Modal>
     </div>
   );
 }

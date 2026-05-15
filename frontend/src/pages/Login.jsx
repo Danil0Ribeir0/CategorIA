@@ -29,37 +29,39 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-container">
-      <h2 className="auth-title">
-        <LogIn size={28} strokeWidth={2.5} /> 
-        CategorIA
-      </h2>
-      
-      {error && <div className="auth-error">{error}</div>}
+    <div className="auth-page-wrapper">
+      <div className="auth-container">
+        <h2 className="auth-title">
+          <LogIn size={28} strokeWidth={2.5} /> 
+          CategorIA
+        </h2>
+        
+        {error && <div className="auth-error">{error}</div>}
 
-      <form onSubmit={handleLogin} className="auth-form">
-        <input 
-          type="email" 
-          placeholder="Seu E-mail" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-          className="auth-input"
-        />
-        <input 
-          type="password" 
-          placeholder="Sua Senha" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-          className="auth-input"
-        />
-        <button type="submit" className="auth-button">Entrar</button>
-      </form>
+        <form onSubmit={handleLogin} className="auth-form">
+          <input 
+            type="email" 
+            placeholder="Seu E-mail" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            className="auth-input"
+          />
+          <input 
+            type="password" 
+            placeholder="Sua Senha" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            className="auth-input"
+          />
+          <button type="submit" className="auth-button">Entrar</button>
+        </form>
 
-      <p className="auth-footer">
-        Ainda não tem conta? <Link to="/register">Crie uma aqui</Link>
-      </p>
+        <p className="auth-footer">
+          Ainda não tem conta? <Link to="/register">Crie uma aqui</Link>
+        </p>
+      </div>
     </div>
   );
 }

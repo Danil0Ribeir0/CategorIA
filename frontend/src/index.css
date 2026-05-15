@@ -18,10 +18,16 @@ body {
   background: var(--bg-gradient);
   color: var(--text-main);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
 
 .auth-container {
@@ -88,6 +94,14 @@ body {
   background-color: #2563eb; 
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
   transform: translateY(-1px);
+}
+
+.auth-page-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .auth-footer {

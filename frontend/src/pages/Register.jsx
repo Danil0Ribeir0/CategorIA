@@ -25,45 +25,47 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-container">
-      <h2 className="auth-title">
-        <UserPlus size={28} strokeWidth={2.5} /> 
-        Criar Conta
-      </h2>
-      
-      {error && <div className="auth-error">{error}</div>}
+    <div className="auth-page-wrapper">
+      <div className="auth-container">
+        <h2 className="auth-title">
+          <UserPlus size={28} strokeWidth={2.5} /> 
+          Criar Conta
+        </h2>
+        
+        {error && <div className="auth-error">{error}</div>}
 
-      <form onSubmit={handleRegister} className="auth-form">
-        <input 
-          type="text" 
-          placeholder="Seu Nome" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          required 
-          className="auth-input"
-        />
-        <input 
-          type="email" 
-          placeholder="Seu E-mail" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-          className="auth-input"
-        />
-        <input 
-          type="password" 
-          placeholder="Sua Senha" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-          className="auth-input"
-        />
-        <button type="submit" className="auth-button">Registar</button>
-      </form>
+        <form onSubmit={handleRegister} className="auth-form">
+          <input 
+            type="text" 
+            placeholder="Seu Nome" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+            className="auth-input"
+          />
+          <input 
+            type="email" 
+            placeholder="Seu E-mail" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            className="auth-input"
+          />
+          <input 
+            type="password" 
+            placeholder="Sua Senha" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            className="auth-input"
+          />
+          <button type="submit" className="auth-button">Registar</button>
+        </form>
 
-      <p className="auth-footer">
-        Já tem conta? <Link to="/login">Faça Login</Link>
-      </p>
+        <p className="auth-footer">
+          Já tem conta? <Link to="/login">Faça Login</Link>
+        </p>
+      </div>
     </div>
   );
 }
